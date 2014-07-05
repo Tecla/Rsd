@@ -2,7 +2,7 @@
 
 RenderSpud Data, developed originally as a scene description format for production rendering.  It is human-readable and highly composable.
 
-Rsd uses modern C++ and the lemon parser generator.
+Rsd uses modern C++ and the lemon parser generator.  It is used and developed as part of [RenderSpud](http://renderspud.blogspot.com/).
 
 ## History
 
