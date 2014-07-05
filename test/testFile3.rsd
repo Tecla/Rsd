@@ -1,0 +1,21 @@
+
+include "whatever.rsd";
+
+myValue2 = @"Some".Type
+{
+    someArray = @V3f [ 1.0,
+                       2.0,
+                       3.0 ];
+    
+    someArray2 = @whatever [ someFunction(obj: null, on : true, name:"x"),
+                             @V3f [1, 2, 3, 0],
+                              3.0 ];
+    
+    someString = "${someArray2[1][2]} is three";
+    someString2 = "${myValue.someArray[1]} is ${someArray[someArray2[1][3]]} less than ${someArray[2]}";
+    
+    // Shouldn't resolve (the first variable is an out of range index)
+    someString3 = "${myValue.someArray[3]} is ${someArray[someArray2[1][3]]} less than ${someArray[2]}";
+    
+};
+

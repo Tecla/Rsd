@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+def options(opt):
+    pass
+
+def configure(conf):
+    pass
+
+def build(bld):
+    import os
+    sources = [ 'File.cpp',
+                'GrammarMain.cpp',
+                'GrammarReference.cpp',
+                'Macro.cpp',
+                'Parser.cpp',
+                'Reference.cpp',
+                'SchemaManager.cpp',
+                'Tokenizer.cpp',
+                'TypeName.cpp',
+                'Value.cpp'
+              ]
+
+    objects = bld.stlib(features = [ 'cxx' ],
+                        uselib = [ 'BOOST' ],
+                        use = [],
+                        target = 'Rsd',
+                        includes = [ '..', '../include' ],
+                        export_includes = [ '../include' ],
+                        source = sources)

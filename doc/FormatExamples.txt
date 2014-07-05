@@ -1,0 +1,82 @@
+// Includes
+include "...";
+
+someBlock =
+{
+    include "...";
+    include "more.rsd";
+    
+    variableThatOverridesWhatIsInTheIncludes = "tango";
+};
+
+
+// Block vs. array
+
+// Blocks only have named values
+anotherBlock =
+{
+    var1 = true;
+    var2 = 2;
+    var3 = "blah";
+    var4 = [ 0, 1, 2, 8 ];
+};
+
+// Block inheritance (aggregate data and/or override)
+inheritingBlock = :anotherBlock
+{
+    var3 = "blah changed"; // Override
+    var5 = "whatever"; // New (additional) value
+};
+
+// Arrays only have unnamed values
+anArray = [ true, 2, "blah" ];
+
+
+// A value is typed (see below) or untyped, and is one of the following:
+// A string: "..."
+// An integer: 4
+// A float: 4.837
+// A boolean: true (or false)
+// A reference, or a name/path/expression referring to another value (see below)
+// A macro, i.e. invoke a predefined function that yields a value
+// A block: { ... } (name = value pattern, semicolon-separated elements)
+// An array: [ ... ] (unnamed, comma-separated elements)
+
+
+// Types
+// Precede actual value with @<TypeName>
+// You can access subtypes with '.', and complex type names are allowed in strings
+
+someVector = @V3f [ 1, 2, 3 ];
+
+someSwitch = @MySwitchType false;
+
+someComplicatedTypedVar = @"Some odd # type namespace"."Some type name" 5;
+
+someBlock = @SomeNamespace.MyBlockType
+{
+    myBlockTypeFirstVar = "${anArray[anotherBlock.var4[1]]}yadda yadda";
+};
+
+
+// References
+
+// Integer subscript for arrays
+someRef = anArray[1];
+// String subscript for blocks (denoting name of a variable)
+ref2 = anotherBlock["var2"];
+// We allow complex subscripts, as long as they resolve to a string for block
+// access, or an integer for array access
+ref3 = anArray[anotherBlock["var4"][1]];
+// Or even more interesting, use macros:
+ref4 = anotherBlock[someMacro(someArg : "transformMeToVar2")];
+
+
+// Macros
+
+someValue = predefinedMacroName(someArgName: @V3f [ 1, 1, 1 ],
+                                anotherArgName: "blah");
+
+
+// Validation/Schemas (TODO, scope this out)
+

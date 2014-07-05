@@ -1,0 +1,75 @@
+intValue = 3;
+floatValue = 4.0;
+stringValue = "...";
+expandableStringValue = "...${...}...";
+referenceValue = someOtherValue;
+referenceValue2 = someOtherValue["member"].anotherValue[arrayValue2[0]];
+
+blockValue = { value1 = ...; value2 = ...; };
+
+include "blah.rsd";
+
+anotherBlock = { include "blahinside.rsd"; };
+
+arrayValue = [ 3, 4, 5, ... ];
+arrayValue2 = [ @int 3, @float 4.0, ... ];
+
+typedValue = @SomeNamespace.TypeName ...;
+typedValue2 = @"A strange namespace name".TypeName ...;
+
+"a strange value # name " = 5;
+
+someFunction = @Function
+{
+    policy = "strict";
+
+    keyword1 = int;
+    keyword2 = SomeNamespace.TypeName;
+};
+
+functionResult = someFunction(keyword1 : arg1, keyword2 : arg2, ...);
+
+overrideValue = :blockValue { value1 = "blah"; };
+
+SomeNamespace =
+{
+    TypeNameBase = @Block
+    {
+        policy = "strict";
+
+        yodel = @Attribute
+        {
+            type = [ int, float ]; // Type can be either float or int
+            min = 0;
+            max = 100;
+            hint = "percent";
+            required = false;
+        };
+
+        scream = @Attribute
+        {
+            type = string;
+            hint = "filename";
+            required = true;
+        };
+    };
+
+    TypeName = @Block
+        : TypeNameBase
+    {
+        policy = "permissive"; // Override
+
+        yack = @ArrayAttribute
+        {
+            sizes = [ 3, 10 ];
+            type = [ float, int ]; // 3x10 elements of either float or int (e.g var = @float blockValue.yack[2][7])
+        };
+    };
+
+    ArrayType = @Array
+    {
+        sizes = [ Array.infinite ]; // Array of indefinite size
+        type = int;                 // Each array element is of type int
+    };
+};
+
