@@ -67,4 +67,8 @@ If you run on the commandline, the instructions should be the same as for Linux.
 
 ### Windows
 
-Windows builds are not yet possible.  This is coming up soon.
+Windows builds occur via the Visual Studio projects in the 'Rsd' subdirectory.
+
+There is a project to build Rsd as a static library, and also a test console app that can be used to inspect .rsd files.
+
+You are likely to need to change the include and library paths for boost in the project settings.
