@@ -28,9 +28,12 @@ int main(int argc, char **argv)
     try
     {
         File::FilePtr pFile = new File(filename, true);
-
-        std::cout << "Parsed RSD file \""
-                  << filename << "\"; press ctrl-D to end session." << std::endl;
+        
+        std::cout << "Parsed RSD file \"" << filename << "\"";
+        if (evaluate != "")
+            std::cout << std::endl;
+        else
+            std::cout << "; press ctrl-D or type 'exit' and press enter to end session." << std::endl;
 
         while (true)
         {
@@ -58,7 +61,11 @@ int main(int argc, char **argv)
                 }
                 Reference::Ptr pRef;
                 Value::Ptr pResult;
-                if (line != "")
+                if (line == "exit")
+                {
+                    break;
+                }
+                else if (line != "")
                 {
                     pRef = Reference::fromString(line);
                     pResult = pFile->find(*pRef);

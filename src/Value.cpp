@@ -1034,7 +1034,7 @@ Value::ConstPtr Value::find(const Reference& ref) const
         }
         return pCurrentValue;
     }
-    catch (ValueException& e)
+    catch (ValueException&)
     {
         // Just eat the exception
     }
@@ -1094,7 +1094,7 @@ Value::Ptr Value::find(const Reference& ref)
         }
         return pCurrentValue;
     }
-    catch (ValueException& e)
+    catch (ValueException&)
     {
         // Just eat the exception
     }
@@ -1235,9 +1235,9 @@ std::string Value::str(bool followIncludes,
     {
         stream << m_float;
 
-        float intPart;
-        float fracPart = std::modf(m_float, &intPart);
-        if (fracPart == 0.0f)
+        double intPart;
+        double fracPart = std::modf(m_float, &intPart);
+        if (fracPart == 0.0)
         {
             // Ensure float numbers are written out as such, even when they can
             // round exactly to integers otherwise.
@@ -1442,7 +1442,7 @@ Value::ConstResolved Value::resolve(const Value& v) const
                     result += v.m_string.substr(varStart, varEnd + 1 - varStart);
                 }
             }
-            catch (Parser::ParseException& pe)
+            catch (Parser::ParseException&)
             {
                 // Parsing the reference failed?  Just put it back in as
                 // unresolved so they can see what didn't make it in.
@@ -1483,7 +1483,7 @@ Value::ConstResolved Value::resolve(const Value& v) const
                 return resolve(*ptr);
             }
         }
-        catch (ValueException& e)
+        catch (ValueException&)
         {
             // Fall through to the default (unresolved) case
         }
@@ -1606,7 +1606,7 @@ Value::Resolved Value::resolve(Value& v)
                     result += v.m_string.substr(varStart, varEnd + 1 - varStart);
                 }
             }
-            catch (Parser::ParseException& pe)
+            catch (Parser::ParseException&)
             {
                 // Parsing the reference failed?  Just put it back in as
                 // unresolved so they can see what didn't make it in.
@@ -1645,7 +1645,7 @@ Value::Resolved Value::resolve(Value& v)
                 return resolve(*ptr);
             }
         }
-        catch (ValueException& e)
+        catch (ValueException&)
         {
             // Fall through to the default (unresolved) case
         }

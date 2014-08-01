@@ -2,3 +2,13 @@
 build/
 .waf*
 .lock*
+Rsd/x64/
+Rsd/Debug/
+Rsd/Release/
+Rsd/TestConsole/Debug/
+Rsd/TestConsole/Release/
+Rsd/TestConsole/x64/
+*.suo
+*.sdf
+*.opensdf
+
