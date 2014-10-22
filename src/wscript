@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import os
+
+
 def options(opt):
     pass
 
@@ -18,6 +21,18 @@ def build(bld):
                 'TypeName.cpp',
                 'Value.cpp'
               ]
+
+    installable_headers = [ os.path.join('..', 'include', 'Rsd', 'Base.h'),
+                            os.path.join('..', 'include', 'Rsd', 'File.h'),
+                            os.path.join('..', 'include', 'Rsd', 'Macro.h'),
+                            os.path.join('..', 'include', 'Rsd', 'Memory.h'),
+                            os.path.join('..', 'include', 'Rsd', 'Parser.h'),
+                            os.path.join('..', 'include', 'Rsd', 'Platform.h'),
+                            os.path.join('..', 'include', 'Rsd', 'Reference.h'),
+                            os.path.join('..', 'include', 'Rsd', 'SchemaManager.h'),
+                            os.path.join('..', 'include', 'Rsd', 'TypeName.h'),
+                            os.path.join('..', 'include', 'Rsd', 'Value.h')
+                          ]
     
     # Build the lemon parser-generator first, and make sure it's done so we can
     # directly build the .ly files via lemon
@@ -30,7 +45,9 @@ def build(bld):
                         target = 'Rsd',
                         includes = [ '.', '..', '../include' ],
                         export_includes = [ '../include' ],
-                        source = sources)
+                        source = sources,
+                        install_path = '${PREFIX}/lib')
+    bld.install_files('${PREFIX}/include/Rsd', installable_headers)
 
 
 # Task to run the lemon parser-generator

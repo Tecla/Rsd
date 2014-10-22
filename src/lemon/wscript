@@ -10,11 +10,13 @@ def build(bld):
     # Build lemon itself
     lemon = bld.program(features = [ 'c' ],
                         target = 'lemon',
-                        source = [ 'lemon.c' ])
+                        source = [ 'lemon.c' ],
+                        install_path = None)
 
     # Copy parser source template to build dir
     lempar = bld(name = 'lempar',
                  rule = 'cp ${SRC[0].abspath()} ${TGT}',
                  source = bld.path.make_node('lempar.c.in'),
-                 target = 'lempar.c')
+                 target = 'lempar.c',
+                 install_path = None)
 

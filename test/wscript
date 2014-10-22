@@ -17,10 +17,12 @@ def build(bld):
                         uselib = [ 'BOOST' ],
                         use = [ 'Rsd' ],
                         target = 'test1',
-                        source = [ 'Test1.cpp' ])
+                        source = [ 'Test1.cpp' ],
+                        install_path = None)
     
     test2 = bld.program(features = [ 'cxx' ],
                         uselib = [ 'BOOST' ],
                         use = [ 'Rsd' ],
                         target = 'test2',
-                        source = [ 'Test2.cpp' ])
+                        source = [ 'Test2.cpp' ],
+                        install_path = None)
