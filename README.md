@@ -59,7 +59,7 @@ Next, to build Rsd you may run:
 
 It will deposit the build results in `build/Linux.<platform>/opt/src/libRsd.a`.  Note that there are also `build_debug` and `build_profile` targets
 
-If for some reason you modify the parser and grammars, you must go into the `src/lemon` directory and run `make`.  It will rerun the parser generator and put the modified grammar source/header in the right place for you.
+The parser and grammars should automatically be built.  If you wish to manually build them, you must go into the `src/lemon` directory and run `make`.  It will rerun the parser generator and put the modified grammar source/header in the src directory for you.  Beware that the waf build system may be confused by the presence of those generated .cpp/.h files, though, so if you go back to building with waf you should `make distclean` in the `src/lemon` directory to clear out those files.
 
 ### OS X
 
@@ -67,7 +67,7 @@ If you run on the commandline, the instructions should be the same as for Linux.
 
 ### Windows
 
-Windows builds occur via the Visual Studio projects in the 'Rsd' subdirectory.
+Windows builds occur via the Visual Studio projects in the 'Rsd' subdirectory.  There is support for building via waf, but it is not very well tested; your mileage may vary.
 
 There is a project to build Rsd as a static library, and also a test console app that can be used to inspect .rsd files.
 
