@@ -28,7 +28,8 @@ Reference::Reference(const Reference& ref)
     {
         Part p;
         p.m_identifier = iter->m_identifier;
-        p.m_pSubscriptValue = iter->m_pSubscriptValue->clone();
+        if (iter->m_pSubscriptValue)
+            p.m_pSubscriptValue = iter->m_pSubscriptValue->clone();
         m_parts.push_back(p);
     }
 }

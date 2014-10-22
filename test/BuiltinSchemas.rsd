@@ -1,0 +1,66 @@
+string = @Primitive
+{
+
+};
+
+bool = @Primitive
+{
+
+};
+
+int = @Primitive
+{
+
+};
+
+float = @Primitive
+{
+
+};
+
+
+Block = @Primitive
+{
+    policy = @Attribute
+    {
+        type = string;
+    };
+};
+
+Attribute = @Block
+{
+    policy = "permissive";
+    type = @Attribute
+    {
+    
+    };
+};
+
+ArrayAttribute = @Block
+{
+    policy = "permissive";
+    type = @Attribute
+    {
+    
+    };
+    sizes = @ArrayAttribute
+    {
+    
+    };
+};
+
+Array = @Primitive
+{
+    policy = @Attribute
+    {
+        type = string;
+    };
+    type = @Attribute
+    {
+        
+    };
+    sizes = @ArrayAttribute
+    {
+    
+    };
+};

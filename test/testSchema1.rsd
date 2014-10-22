@@ -1,0 +1,220 @@
+include "BuiltinSchemas.rsd";
+
+//////////////////////////////////// Schemas ///////////////////////////////////
+
+Shader = @Block
+{
+    policy = "permissive";
+    name = @Attribute { type = string; };
+};
+
+SurfaceShader = @Block : Shader
+{
+
+};
+
+DisplacementShader = @Block : Shader
+{
+
+};
+
+VolumeShader = @Block : Shader
+{
+
+};
+
+LightShader = @Block : Shader
+{
+
+};
+
+
+V3f = @Array
+{
+    policy = "strict";
+    type = float;
+    sizes = [ 3 ];
+};
+
+V2f = @Array
+{
+    policy = "strict";
+    type = float;
+    sizes = [ 2 ];
+};
+
+Quat = @Block
+{
+    policy = "strict";
+    r = @Attribute { type = float; };
+    i = @Attribute { type = V3f; };
+};
+
+Matrix = @Array
+{
+    policy = "strict";
+    type = float;
+    sizes = [ 16 ];
+};
+
+
+Transform = @Block
+{
+    policy = "permissive";
+    
+    matrix = @Attribute { type = Matrix; };
+    
+    translate = @Attribute { type = V3f; };
+    rotate = @Attribute { type = Quat; };
+    scale = @Attribute { type = V3f; };
+};
+
+
+RGB = @Array
+{
+    policy = "strict";
+    type = float;
+    sizes = [ 3 ];
+};
+
+
+Object = @Block
+{
+    transform = @Attribute { type = Transform; };
+};
+
+Camera = @Block : Object
+{
+    position = @Attribute { type = V3f; };
+    lookAt = @Attribute { type = V3f; };
+    focusAt = @Attribute { type = V3f; };
+    lensRadius = @Attribute { type = V3f; };
+    fov = @Attribute { type = float; };
+};
+
+IndexedV3f = @Block
+{
+    policy = strict;
+    
+    values = @ArrayAttribute
+    {
+        type = V3f;
+        sizes = [ Array.infinite ];
+    };
+    
+    indices = @ArrayAttribute
+    {
+        type = int;
+        sizes = [ Array.infinite ];
+    };
+};
+
+IndexedV2f = @Block
+{
+    policy = strict;
+    
+    values = @ArrayAttribute
+    {
+        type = V2f;
+        sizes = [ Array.infinite ];
+    };
+    
+    indices = @ArrayAttribute
+    {
+        type = int;
+        sizes = [ Array.infinite ];
+    };
+};
+
+Mesh = @Block : Object
+{
+    vertices = @Attribute { type = IndexedV3f; };
+    
+    normals = @Attribute { type = IndexedV3f; };
+    
+    uvs = @Attribute { type = IndexedV2f; };
+    
+    smoothing = @Attribute { type = bool; };
+    
+    creases = @ArrayAttribute { type = int; sizes = [ Array.infinite ]; };
+    creaseAmount = @ArrayAttribute { type = float; sizes = [ Array.infinite ]; };
+    
+    subdivLevel = @Attribute { type = int; };
+    subdivType = @Attribute { type = string; };
+    
+    shader = @Attribute { type = SurfaceShader; };
+    displacementShader = @Attribute { type = DisplacementShader; };
+};
+
+Plane = @Block : Object
+{
+    range = @ArrayAttribute { type = V2f; sizes = [ 2 ]; };
+    shader = @Attribute { type = SurfaceShader; };
+};
+
+Sphere = @Block : Object
+{
+    radius = @Attribute { type = float; };
+    shader = @Attribute { type = SurfaceShader; };
+};
+
+
+Light = @Block : Object
+{
+    power = @Attribute { type = RGB; };
+    shader = @Attribute { type = LightShader; };
+};
+
+
+PointLight = @Block : Light
+{
+
+};
+
+
+//////////////////////////////////// Values ////////////////////////////////////
+
+
+cam = @Camera
+{
+    position = @V3f [ 0, 2, -4 ];
+    lookAt = @V3f [ 0, 0, 0 ];
+    fov = 45;
+};
+
+redLambert = @SurfaceShader
+{
+    color = @RGB [ 1, 0, 0 ];
+};
+
+grayLambert = @SurfaceShader
+{
+    color = @RGB [ 0.75, 0.75, 0.75 ];
+};
+
+
+ground = @Plane
+{
+    transform = @Transform
+    {
+        translate = @V3f [ 0, -1, 0 ];
+    };
+    
+    shader = redLambert;
+};
+
+sphere1 = @Sphere
+{
+    radius = 1;
+    shader = grayLambert;
+};
+
+light1 = @PointLight
+{
+    transform = @Transform
+    {
+        translate = @V3f [ -2, 3, -1 ];
+    };
+    
+    power = @RGB [ 10, 10, 10 ];
+};

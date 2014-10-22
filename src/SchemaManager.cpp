@@ -25,6 +25,7 @@ namespace RenderSpud
 
 enum SchemaType
 {
+    kSchemaTypePrimitive,
     kSchemaTypeBlock,
     kSchemaTypeArray,
     kSchemaTypeFunction,
@@ -36,7 +37,9 @@ SchemaType findSchemaType(Value::Ptr pValue)
     const TypeName& t = pValue->typeName();
     if (t.size() == 1 && pValue->type() == Value::kTypeBlock)
     {
-        if (t[0] == "Block")
+        if (t[0] == "Primitive")
+            return kSchemaTypePrimitive;
+        else if (t[0] == "Block")
             return kSchemaTypeBlock;
         else if (t[0] == "Array")
             return kSchemaTypeArray;
@@ -49,7 +52,9 @@ SchemaType findSchemaType(Value::Ptr pValue)
 
 std::string schemaTypeString(SchemaType t)
 {
-    if (t == kSchemaTypeBlock)
+    if (t == kSchemaTypePrimitive)
+        return "Primitive";
+    else if (t == kSchemaTypeBlock)
         return "Block";
     else if (t == kSchemaTypeArray)
         return "Array";
@@ -180,6 +185,23 @@ protected:
 };
 
 
+class PrimitiveSchema : public Schema
+{
+public:
+    PrimitiveSchema(Value::Ptr pSchemaValue = NULL);
+
+    virtual SchemaType schemaType() const { return kSchemaTypePrimitive; }
+
+    virtual bool validate(Value::Ptr pValue,
+                          SchemaManager& manager,
+                          std::vector<std::string>* pValidationResults = NULL,
+                          bool recursiveValidation = true);
+
+private:
+    Value::Type m_primType;
+};
+
+
 class BlockSchema : public Schema
 {
 public:
@@ -274,8 +296,14 @@ void SchemaManager::addSchema(Value::Ptr pSchemaBlock, bool isBuiltin)
         return;
     }
 
-    m_schemaValues.push_back(pSchemaBlock->clone());
-    if (type == kSchemaTypeBlock)
+//    m_schemaValues.push_back(pSchemaBlock->clone());
+    m_schemaValues.push_back(pSchemaBlock);
+    if (type == kSchemaTypePrimitive)
+    {
+        m_schemas.insert(std::pair<std::string, Schema*>(pSchemaBlock->name(),
+                                                         new PrimitiveSchema(m_schemaValues.back())));
+    }
+    else if (type == kSchemaTypeBlock)
     {
         m_schemas.insert(std::pair<std::string, Schema*>(pSchemaBlock->name(),
                                                          new BlockSchema(m_schemaValues.back(),
@@ -450,6 +478,13 @@ bool SchemaManager::validate(Value::Ptr pValue,
                              bool recursiveValidation,
                              const TypeName& overrideType)
 {
+    // Forward to schema validation if possible
+    SchemaType schemaType = findSchemaType(pValue);
+    if (schemaType != kSchemaTypeUnknown)
+    {
+        return validateSchema(pValue, pValidationResults);
+    }
+
     TypeName type = overrideType.empty() ? pValue->typeName() : overrideType;
 
     // Double-check if it's a macro; we get the 'type' from the name
@@ -534,6 +569,46 @@ bool Schema::typeMatches(Value::Ptr pValue,
     // TODO: given a value, see if the type (or an alias/supertype) matches a list
     return false;
 }
+
+
+PrimitiveSchema::PrimitiveSchema(Value::Ptr pSchemaValue)
+    : Schema(pSchemaValue, true)
+{
+    if (pSchemaValue->name() == "string")
+        m_primType = Value::kTypeString;
+    else if (pSchemaValue->name() == "bool")
+        m_primType = Value::kTypeBoolean;
+    else if (pSchemaValue->name() == "int")
+        m_primType = Value::kTypeInteger;
+    else if (pSchemaValue->name() == "float")
+        m_primType = Value::kTypeFloat;
+    else
+        m_primType = Value::kTypeInvalid;
+}
+
+
+bool PrimitiveSchema::validate(Value::Ptr pValue,
+                           SchemaManager& manager,
+                           std::vector<std::string>* pValidationResults,
+                           bool recursiveValidation)
+{
+    if (pValue->type() != m_primType)
+    {
+        if (pValidationResults)
+        {
+            std::ostringstream stream;
+            stream << pValue->file() << ':' << pValue->line() << ':'
+                   << pValue->pos()
+                   << " (" << pValue->path()
+                   << ") Value with wrong primitive type."
+                   << std::flush;
+            pValidationResults->push_back(stream.str());
+        }
+        return false;
+    }
+    return true;
+}
+
 
 
 BlockSchema::BlockSchema(Value::Ptr pSchemaValue,
@@ -640,7 +715,7 @@ BlockSchema::BlockSchema(Value::Ptr pSchemaValue,
         {
             if (pSizesValue->canConvertTo(Value::kTypeArray))
             {
-                Value::Ptr pArrayValue = pTypeValue->asArray();
+                Value::Ptr pArrayValue = pSizesValue->asArray();
                 for (size_t ti = 0; ti < pArrayValue->size(); ++ti)
                 {
                     Value::Ptr pArrayItem = pArrayValue->value(ti);
@@ -869,7 +944,7 @@ ArraySchema::ArraySchema(Value::Ptr pSchemaValue,
     {
         if (pSizesValue->canConvertTo(Value::kTypeArray))
         {
-            Value::Ptr pArrayValue = pTypeValue->asArray();
+            Value::Ptr pArrayValue = pSizesValue->asArray();
             for (size_t ti = 0; ti < pArrayValue->size(); ++ti)
             {
                 Value::Ptr pArrayItem = pArrayValue->value(ti);

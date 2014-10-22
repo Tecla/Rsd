@@ -18,9 +18,10 @@ src/GrammarReference.cpp
 src/GrammarReference.h
 src/GrammarReference.ly
 src/lemon/lemon.c
-src/lemon/lempar.c
+src/lemon/lempar.c.in
 src/lemon/lemon.html
 src/lemon/Makefile
+src/lemon/wscript
 src/Macro.cpp
 src/Parser.cpp
 src/Reference.cpp
@@ -34,3 +35,9 @@ test/Test1.cpp
 test/TestConsole.cpp
 wscript
 test/wscript
+test/testFile1.rsd
+test/testFile3.rsd
+test/whatever.rsd
+test/Test2.cpp
+test/testSchema1.rsd
+test/BuiltinSchemas.rsd
