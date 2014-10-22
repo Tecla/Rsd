@@ -13,9 +13,14 @@ def build(bld):
                               target = 'testConsole',
                               source = [ 'TestConsole.cpp' ])
     
-    testConsole = bld.program(features = [ 'cxx' ],
-                              uselib = [ 'BOOST' ],
-                              use = [ 'Rsd' ],
-                              target = 'test1',
-                              source = [ 'Test1.cpp' ])
+    test1 = bld.program(features = [ 'cxx' ],
+                        uselib = [ 'BOOST' ],
+                        use = [ 'Rsd' ],
+                        target = 'test1',
+                        source = [ 'Test1.cpp' ])
     
+    test2 = bld.program(features = [ 'cxx' ],
+                        uselib = [ 'BOOST' ],
+                        use = [ 'Rsd' ],
+                        target = 'test2',
+                        source = [ 'Test2.cpp' ])

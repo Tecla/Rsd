@@ -7,10 +7,9 @@ def configure(conf):
     pass
 
 def build(bld):
-    import os
     sources = [ 'File.cpp',
-                'GrammarMain.cpp',
-                'GrammarReference.cpp',
+                'GrammarMain.ly',
+                'GrammarReference.ly',
                 'Macro.cpp',
                 'Parser.cpp',
                 'Reference.cpp',
@@ -19,11 +18,49 @@ def build(bld):
                 'TypeName.cpp',
                 'Value.cpp'
               ]
+    
+    # Build the lemon parser-generator first, and make sure it's done so we can
+    # directly build the .ly files via lemon
+    bld.recurse('lemon')
+    bld.add_group()
 
     objects = bld.stlib(features = [ 'cxx' ],
                         uselib = [ 'BOOST' ],
                         use = [],
                         target = 'Rsd',
-                        includes = [ '..', '../include' ],
+                        includes = [ '.', '..', '../include' ],
                         export_includes = [ '../include' ],
                         source = sources)
+
+
+# Task to run the lemon parser-generator
+#
+# It needs to copy generated .h files out to the build directory, and
+# copy/rename generated .c files as .cpp files out to the build dir as well.
+from waflib.Task import Task
+class lemon(Task):
+    color = 'BLUE'
+    shell = True
+    ext_out = ['.h']
+    run_str = ('${SRC[0].abspath()} -l -q ${SRC[1].abspath()} && '
+               'mv ${SRC[1].abspath().replace(".ly", ".c")} ${TGT[0].abspath()} && '
+               'mv ${SRC[1].abspath().replace(".ly", ".h")} ${TGT[1].abspath()}')
+
+# Extension for automatically running lemon together with the .ly file and the
+# parser source template to get the generated .cpp and .h parser source
+from waflib.TaskGen import extension
+@extension('.ly')
+def process_ly(self, node):
+    # Find previous build artifacts to use in building the parsers
+    lemon_tgen = self.bld.get_tgen_by_name('lemon')
+    lempar_tgen = self.bld.get_tgen_by_name('lempar')
+    lemonParserGenerator = lemon_tgen.link_task.outputs[0]
+    parserTemplate = lempar_tgen.tasks[0].outputs[0]
+    # Inputs: lemon itself, the .ly file, and template (lempar.c)
+    srcs = [ lemonParserGenerator, node, parserTemplate ]
+    # Outputs: the generated parser .cpp and .h files
+    dsts = [ node.change_ext('.cpp'), node.change_ext('.h') ]
+    tsk = self.create_task('lemon', srcs, dsts)
+    # Add the .cpp to the build so it gets compiled too
+    self.source.append(dsts[0])
+

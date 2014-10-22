@@ -47,7 +47,7 @@ def options(opt):
     #Options.tooldir.append('waf_tools')
 
     # Add tool options to the commandline
-    opt.load('compiler_cxx boost')
+    opt.load('compiler_c compiler_cxx boost')
 
     # Add in custom options
     # ...
@@ -61,10 +61,13 @@ def options(opt):
 def configure(conf):
     # Make sure we've got our tools available we need;
     # the order of all of the following is important
-    conf.load('compiler_cxx boost')
+    conf.load('compiler_c compiler_cxx boost')
 
     # Set up pthread and real-time clock availability (for boost_thread)
-    conf.env['LIB_PTHREAD'] = [ 'pthread', 'rt' ]
+    if osarch.startswith('Windows'):
+        pass
+    else:
+        conf.env['LIB_PTHREAD'] = [ 'pthread', 'rt' ]
 
     # Check for boost libraries we use
     conf.check_boost(lib = 'thread system atomic')
@@ -72,11 +75,16 @@ def configure(conf):
     # Common libraries used (that have no associated tool)
     # ...
 
-    conf.env.append_unique('CCFLAGS', [ '-fPIC', '-g3', '-rdynamic', '-Wall', '-Wno-unused-parameter' ])
-    conf.env.append_unique('CXXFLAGS', [ '-std=gnu++11', '-fPIC', '-g3', '-rdynamic', '-Wall', '-Wno-unused-parameter' ])
-    conf.env.append_unique('LINKFLAGS', [ '-fPIC', '-g3', '-rdynamic' ])
-
     conf.env.append_unique('DEFINES', [ 'WAF=1' ])
+
+    if osarch.startswith('Windows'):
+        conf.env.append_unique('CCFLAGS', [ '/MD', '/Wall' ])
+        conf.env.append_unique('CXXFLAGS', [ '/MD', '/Wall' ])
+        conf.env.append_unique('LINKFLAGS', [ '/MD' ])
+    else:
+        conf.env.append_unique('CCFLAGS', [ '-fPIC', '-rdynamic', '-Wall', '-Wno-unused-parameter' ])
+        conf.env.append_unique('CXXFLAGS', [ '-std=gnu++11', '-fPIC', '-rdynamic', '-Wall', '-Wno-unused-parameter' ])
+        conf.env.append_unique('LINKFLAGS', [ '-fPIC', '-rdynamic' ])
 
     # Add in all the wscripts for configuration
     for buildSubdir in buildSubdirectories:
@@ -88,26 +96,36 @@ def configure(conf):
     # Debug variant of the build
     conf.setenv('debug', defaultEnv)
     conf.env.append_unique('DEFINES', [ 'DEBUG=1', '_DEBUG=1' ])
-    conf.env.append_unique('CCFLAGS', [ '-O0', '-g3' ])
-    conf.env.append_unique('CXXFLAGS', [ '-O0', '-g3' ])
-    conf.env.append_unique('LINKFLAGS', [ '-O0', '-g3' ])
+    if osarch.startswith('Windows'):
+        conf.env.append_unique('CCFLAGS', [ '/Od', '/Zi' ])
+        conf.env.append_unique('CXXFLAGS', [ '/Od', '/Zi' ])
+        conf.env.append_unique('LINKFLAGS', [ '/Od', '/Zi' ])
+    else:
+        conf.env.append_unique('CCFLAGS', [ '-O0', '-g3' ])
+        conf.env.append_unique('CXXFLAGS', [ '-O0', '-g3' ])
+        conf.env.append_unique('LINKFLAGS', [ '-O0', '-g3' ])
 
     # Opt variant; add some optimization flags (shared between opt and profile)
     conf.setenv('opt', defaultEnv)
     optEnv = conf.env
     conf.env.append_unique('DEFINES', [ 'NDEBUG=1' ])
-    conf.env.append_unique('CCFLAGS', [ '-O3' ])
-    conf.env.append_unique('CXXFLAGS', [ '-O3' ])
+    if osarch.startswith('Windows'):
+        conf.env.append_unique('CCFLAGS', [ '/Ox' ])
+        conf.env.append_unique('CXXFLAGS', [ '/Ox' ])
+    else:
+        conf.env.append_unique('CCFLAGS', [ '-O3' ])
+        conf.env.append_unique('CXXFLAGS', [ '-O3' ])
 
     # Profile variant of the build
     conf.setenv('profile', optEnv)
-    conf.env.append_unique('CCFLAGS', [ '-pg', '-g3' ])
-    conf.env.append_unique('CXXFLAGS', [ '-pg', '-g3' ])
-    conf.env.append_unique('LINKFLAGS', [ '-pg', '-g3' ])
-
-    # Set a few more opt variant flags
-    optEnv.append_unique('CCFLAGS', [ '-fomit-frame-pointer' ])
-    optEnv.append_unique('CXXFLAGS', [ '-fomit-frame-pointer' ])
+    if osarch.startswith('Windows'):
+        conf.env.append_unique('CCFLAGS', [ '/Zo' ])
+        conf.env.append_unique('CXXFLAGS', [ '/Zo' ])
+        conf.env.append_unique('LINKFLAGS', [ '/Zo' ])
+    else:
+        conf.env.append_unique('CCFLAGS', [ '-g3' ])
+        conf.env.append_unique('CXXFLAGS', [ '-g3' ])
+        conf.env.append_unique('LINKFLAGS', [ '-g3' ])
 
 
 # Set up build targets (build_opt, build_debug, build_profile, clean_opt, ...)
@@ -129,3 +147,4 @@ def build(bld):
     # Add in all the subdirectory wscripts for building
     for buildSubdir in buildSubdirectories:
         bld.recurse(buildSubdir)
+
