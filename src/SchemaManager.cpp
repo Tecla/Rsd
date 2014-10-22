@@ -8,8 +8,13 @@
 //
 ////////////
 
+#ifdef _WIN32
+#include <Windows.h>
+#include <io.h>
+#else
 #include <sys/types.h>
 #include <dirent.h>
+#endif
 #include <errno.h>
 #include <sstream>
 
@@ -365,6 +370,34 @@ Schema* SchemaManager::findSchemaForType(const TypeName& type)
 
 bool SchemaManager::loadAllSchemas(const std::string& fileOrDirectoryPath)
 {
+#ifdef _WIN32
+    struct _finddata_t info;
+    intptr_t pHandle = _findfirst(fileOrDirectoryPath.c_str(), &info);
+    if (pHandle == intptr_t(-1))
+    {
+        return false;
+    }
+    int result = 0;
+    while (result != -1)
+    {
+        // Skip subdirectories
+        if ((info.attrib & _A_SUBDIR) == 0)
+        {
+            std::string path = (fileOrDirectoryPath + '\\') + info.name;
+            if (path.length() > 4 &&
+                (path.substr(path.length() - 4, 4) == ".rsd" ||
+                 path.substr(path.length() - 4, 4) == ".RSD"))
+            {
+                // Only load files that seem to have '.rsd' extensions
+                File::Ptr pRsdFile = new File(path);
+                addSchemas(pRsdFile);
+            }
+        }
+        result = _findnext(pHandle, &info);
+    }
+    _findclose(pHandle);
+    return true;
+#else // _WIN32
     DIR* pDir = opendir(fileOrDirectoryPath.c_str());
     if (pDir == NULL)
     {
@@ -412,6 +445,7 @@ bool SchemaManager::loadAllSchemas(const std::string& fileOrDirectoryPath)
     closedir(pDir);
 
     return true;
+#endif // _WIN32
 }
 
 
@@ -747,7 +781,7 @@ bool BlockSchema::validate(Value::Ptr pValue,
         pFinalValue = pValue->asInlinedBlock();
         checkType = pFinalValue->type();
     }
-    catch (ValueConversionException& e)
+    catch (ValueConversionException&)
     {
         // Not a block, eat the exception
     }
@@ -1025,7 +1059,7 @@ bool FunctionSchema::validate(Value::Ptr pValue,
                               bool recursiveValidation)
 {
     // Make sure the value is a function
-    if (!pValue->type() == Value::kTypeMacro)
+    if (pValue->type() != Value::kTypeMacro)
     {
         if (pValidationResults != NULL)
         {

@@ -38,3 +38,37 @@ There were some ambiguities and limitations in the format, however, and so a suc
 * Resolve references to get final values where possible
 * Create macros for dynamically creating values, referenced from Rsd data
 * (WIP) Create and apply schemas for validating Rsd data against known types
+
+## Building
+
+### Linux
+
+In the main project directory, run:
+
+```
+./waf-1.7.13 configure
+```
+
+If configuration fails, run you may need to add switches like `--boost-libs=<libdir> --boost-includes=<incdir>` to make sure it finds the appropriate boost bits.  Run waf with `--help` to see all the available options.
+
+Next, to build Rsd you may run:
+
+```
+./waf-1.7.13 build_opt
+```
+
+It will deposit the build results in `build/Linux.<platform>/opt/src/libRsd.a`.  Note that there are also `build_debug` and `build_profile` targets
+
+If for some reason you modify the parser and grammars, you must go into the `src/lemon` directory and run `make`.  It will rerun the parser generator and put the modified grammar source/header in the right place for you.
+
+### OS X
+
+If you run on the commandline, the instructions should be the same as for Linux.
+
+### Windows
+
+Windows builds occur via the Visual Studio projects in the 'Rsd' subdirectory.
+
+There is a project to build Rsd as a static library, and also a test console app that can be used to inspect .rsd files.
+
+You are likely to need to change the include and library paths for boost in the project settings.
