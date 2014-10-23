@@ -104,10 +104,6 @@ private:
     Macro(const Macro&) { }
     Macro& operator =(const Macro&) { return *this; }
 
-    // The main class deals with all registration.  Subclasses should just
-    // initialize the base class in their constructor, and define execute()
-    static std::map<std::string, Macro::Ptr> m_sRegisteredMacros;
-
 protected:
     std::string m_name;
     std::vector<std::string> m_argumentKeywords;

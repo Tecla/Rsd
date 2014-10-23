@@ -18,29 +18,41 @@ namespace RenderSpud
     {
 
 
-std::map<std::string, Macro::Ptr> Macro::m_sRegisteredMacros;
+namespace
+{
 
+std::map<std::string, Macro::Ptr>& registeredMacros()
+{
+    // Function-static initialization trick so that others can auto-register
+    // macros via static initialization without order issues
+static std::map<std::string, Macro::Ptr> sRegisteredMacros;
+    return sRegisteredMacros;
+}
+
+}
 
 void Macro::registerMacro(Macro::Ptr pMacro)
 {
-    m_sRegisteredMacros[pMacro->name()] = pMacro;
+    registeredMacros()[pMacro->name()] = pMacro;
 }
 
 
 void Macro::unregisterMacro(Macro::Ptr pMacro)
 {
-    std::map<std::string, Macro::Ptr>::iterator iter = m_sRegisteredMacros.find(pMacro->name());
-    if (iter != m_sRegisteredMacros.end())
+    std::map<std::string, Macro::Ptr>& rm = registeredMacros();
+    std::map<std::string, Macro::Ptr>::iterator iter = rm.find(pMacro->name());
+    if (iter != rm.end())
     {
-        m_sRegisteredMacros.erase(iter);
+        rm.erase(iter);
     }
 }
 
 
 Macro::Ptr Macro::find(const std::string& name)
 {
-    std::map<std::string, Macro::Ptr>::iterator iter = m_sRegisteredMacros.find(name);
-    if (iter != m_sRegisteredMacros.end())
+    std::map<std::string, Macro::Ptr>& rm = registeredMacros();
+    std::map<std::string, Macro::Ptr>::iterator iter = rm.find(name);
+    if (iter != rm.end())
     {
         return iter->second;
     }
