@@ -18,7 +18,7 @@ There were some ambiguities and limitations in the format, however, and so a suc
 * Value types:
  * Block (with named values)
  * Array (list of unnamed values), nestable
- * Simple types: int, float
+ * Simple types: int (binary, octal, decimal or hexadecimal), float
  * Strings (with ${...} to embed references)
  * Macros (with keyword-value arguments)
  * References to other values
