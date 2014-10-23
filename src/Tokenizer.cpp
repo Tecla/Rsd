@@ -72,10 +72,12 @@ std::string Token::description() const
 
 static const char* sTokenMessages[] =
 {
-    "Unterminated comment",
-    "Unterminated string literal",
-    "Invalid number literal",
-    "Invalid token"
+    "unterminated comment",
+    "unterminated string literal",
+    "invalid number literal",
+    "invalid binary number literal",
+    "invalid octal number literal",
+    "invalid token"
 };
 
 
@@ -84,6 +86,8 @@ enum TokenMessages
     kTokenUnterminatedComment,
     kTokenUnterminatedStringLiteral,
     kTokenInvalidNumberLiteral,
+    kTokenInvalidBinaryNumberLiteral,
+    kTokenInvalidOctalNumberLiteral,
     kTokenInvalidToken
 };
 
@@ -106,10 +110,50 @@ inline bool isDecimalDigit(char c)
 }
 
 
-inline unsigned int charToInt(char c)
+inline bool isBinaryDigit(char c)
 {
-    if (isDecimalDigit(c))
+    return c == '0' || c == '1';
+}
+
+
+inline bool isOctalDigit(char c)
+{
+    return c >= '0' && c <= '7';
+}
+
+
+inline bool isHexadecimalDigit(char c)
+{
+    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
+
+inline unsigned int charToDecimalInt(char c)
+{
+    return static_cast<unsigned int>(c - '0');
+}
+
+
+inline unsigned int charToBinaryInt(char c)
+{
+    return static_cast<unsigned int>(c - '0');
+}
+
+
+inline unsigned int charToOctalInt(char c)
+{
+    return static_cast<unsigned int>(c - '0');
+}
+
+
+inline unsigned int charToHexadecimalInt(char c)
+{
+    if (c >= '0' && c <= '9')
         return static_cast<unsigned int>(c - '0');
+    else if (c >= 'a' && c <= 'f')
+        return static_cast<unsigned int>(c - 'a') + 10;
+    else if (c >= 'A' && c <= 'F')
+        return static_cast<unsigned int>(c - 'A') + 10;
     return 0;
 }
 
@@ -122,6 +166,7 @@ size_t Token::parseToken(size_t startIndex,
 {
     outputToken.setLine(inOutLineNumber);
     outputToken.setPos(inOutPosition + 1);
+    size_t lineStartIndex = startIndex - inOutPosition;
     size_t curIndex = startIndex;
     char c = inputString[curIndex];
     if (Parser::isWhitespace(c))
@@ -325,7 +370,7 @@ size_t Token::parseToken(size_t startIndex,
             }
             else
             {
-                throw TokenException(inOutLineNumber, inOutPosition,
+                throw TokenException(inOutLineNumber, curIndex - lineStartIndex - 1,
                                      sTokenMessages[kTokenInvalidNumberLiteral]);
             }
         }
@@ -339,56 +384,119 @@ size_t Token::parseToken(size_t startIndex,
         double floatPart = 0.0;
         double floatScale = 1.0;
 
+        bool isHex = false;
+        bool isOct = false;
+        bool isBin = false;
         bool isFloat = false;
         bool encounteredDecimal = false;
         bool encounteredExponent = false;
         bool encounteredExponentNegative = false;
         bool encounteredDigit = false;
 
+        size_t numberStartIndex = curIndex;
+
         bool numberDone = false;
         while (!numberDone)
         {
-            if (c == '.')
+            if (c == '0' && curIndex == numberStartIndex)
             {
-                if (encounteredExponent || encounteredDecimal)
+                if (curIndex + 1 < inputString.length())
                 {
-                    throw TokenException(inOutLineNumber, inOutPosition,
+                    char cn = inputString[curIndex + 1];
+                    bool eatNext = false;
+                    if (cn == 'b' || cn == 'B')
+                    {
+                        isBin = true;
+                        eatNext = true;
+                    }
+                    else if (isOctalDigit(cn))
+                    {
+                        isOct = true;
+                        eatNext = false;
+                    }
+                    else if (cn == 'x' || cn == 'X')
+                    {
+                        isHex = true;
+                        eatNext = true;
+                    }
+                    
+                    if (eatNext)
+                    {
+                        ++curIndex;
+                        c = cn;
+                    }
+                }
+                encounteredDigit = true;
+            }
+            else if (c == '.')
+            {
+                if (isOct || isHex || isBin || encounteredExponent || encounteredDecimal)
+                {
+                    throw TokenException(inOutLineNumber, curIndex - lineStartIndex,
                                          sTokenMessages[kTokenInvalidNumberLiteral]);
                 }
                 isFloat = true;
                 encounteredDecimal = true;
             }
-            else if (c == 'e' || c == 'E')
+            else if ((c == 'e' || c == 'E') && !isHex)
             {
-                if (!encounteredDigit || encounteredExponent)
+                if (!encounteredDigit || encounteredExponent || isHex || isBin || isOct)
                 {
-                    throw TokenException(inOutLineNumber, inOutPosition,
+                    throw TokenException(inOutLineNumber, curIndex - lineStartIndex,
                                          sTokenMessages[kTokenInvalidNumberLiteral]);
                 }
                 isFloat = true;
                 encounteredExponent = true;
                 encounteredDigit = false;
             }
-            else if (c == '-' && encounteredExponent && !encounteredExponentNegative && !encounteredDigit)
+            else if (c == '-' && !isBin && !isOct && !isHex && encounteredExponent && !encounteredExponentNegative && !encounteredDigit)
             {
                 encounteredExponentNegative = true;
+            }
+            else if (isBin && isDecimalDigit(c))
+            {
+                if (!isBinaryDigit(c))
+                {
+                    throw TokenException(inOutLineNumber, curIndex - lineStartIndex,
+                                         sTokenMessages[kTokenInvalidBinaryNumberLiteral]);
+                }
+                intPart *= 2;
+                intPart += charToBinaryInt(c);
+                encounteredDigit = true;
+            }
+            else if (isOct && isDecimalDigit(c))
+            {
+                if (!isOctalDigit(c))
+                {
+                    throw TokenException(inOutLineNumber, curIndex - lineStartIndex,
+                                         sTokenMessages[kTokenInvalidOctalNumberLiteral]);
+                }
+                intPart *= 8;
+                intPart += charToOctalInt(c);
+                encounteredDigit = true;
+            }
+            else if (isHex && isHexadecimalDigit(c))
+            {
+                intPart *= 16;
+                intPart += charToHexadecimalInt(c);
+                encounteredDigit = true;
             }
             else if (isDecimalDigit(c))
             {
                 if (encounteredExponent)
                 {
                     exponentPart *= 10;
-                    exponentPart += charToInt(c);
+                    exponentPart += charToDecimalInt(c);
                 }
                 else if (encounteredDecimal)
                 {
                     floatScale *= 0.1;
-                    floatPart += static_cast<double>(charToInt(c)) * floatScale;
+                    floatPart += static_cast<double>(charToDecimalInt(c)) * floatScale;
                 }
                 else
                 {
                     intPart *= 10;
-                    intPart += charToInt(c);
+                    intPart += charToDecimalInt(c);
                 }
                 encounteredDigit = true;
             }
