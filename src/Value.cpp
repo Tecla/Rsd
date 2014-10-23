@@ -1340,7 +1340,7 @@ Value::ConstResolved Value::resolve(const Value& v) const
     // Make sure we know the right context to evaluate strings and macros in
     Value::ConstPtr pEvaluationContext;
     Value::Ptr pNonConstEvaluationContext;
-        if (m_type == kTypeBlock || m_type == kTypeArray)
+    if (m_type == kTypeBlock || m_type == kTypeArray)
     {
         pEvaluationContext = this;
         // We're allow the cheat the const system here; once the context
