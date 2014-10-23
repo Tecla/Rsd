@@ -138,11 +138,10 @@ void Parser::parse(const std::string& input, Value& root)
         catch (TokenException tokenException)
         {
             // Rethrow token exceptions as parse errors, with more information
-            throw ParseException(std::string("Syntax error: invalid token '") +
-                                     input[index] + "'",
+            throw ParseException(std::string("Syntax error: ") + tokenException.what(),
                                  state.m_currentSource,
-                                 state.m_currentLine,
-                                 state.m_currentPosition);
+                                 tokenException.line(),
+                                 tokenException.position());
         }
 
         // Feed tokens to the parser
@@ -192,11 +191,10 @@ void Parser::parseReference(const std::string& input, Reference& ref)
         catch (TokenException tokenException)
         {
             // Rethrow token exceptions as parse errors, with more information
-            throw ParseException(std::string("Syntax error: invalid token '") +
-                                     input[index] + "'",
+            throw ParseException(std::string("Syntax error: ") + tokenException.what(),
                                  state.m_currentSource,
-                                 state.m_currentLine,
-                                 state.m_currentPosition);
+                                 tokenException.line(),
+                                 tokenException.position());
         }
 
         // Feed tokens to the parser
