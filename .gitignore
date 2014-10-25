@@ -8,7 +8,15 @@ Rsd/Release/
 Rsd/TestConsole/Debug/
 Rsd/TestConsole/Release/
 Rsd/TestConsole/x64/
+Rsd/Lemon/Debug/
+Rsd/Lemon/Release/
+Rsd/Lemon/x64/
 *.suo
 *.sdf
 *.opensdf
+src/GrammarMain.cpp
+src/GrammarMain.h
+src/GrammarReference.cpp
+src/GrammarReference.h
+
 

@@ -19,32 +19,32 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{8B7AFDDA-BC26-4E87-89F9-A742440576DF}</ProjectGuid>
+    <ProjectGuid>{008CC682-05EF-491C-A042-F35F1AB873D9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Rsd</RootNamespace>
+    <RootNamespace>Lemon</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -66,8 +66,17 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <NuGetPackageImportStamp>ee5e2d54</NuGetPackageImportStamp>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -75,20 +84,15 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;C:\local\boost_1_55_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <PreBuildEvent>
-      <Command>$(TargetDir)\lemon.exe -l -q $(ProjectDir)\..\src\GrammarMain.ly
-$(TargetDir)\lemon.exe -l -q $(ProjectDir)\..\src\GrammarReference.ly
-mv $(ProjectDir)\..\src\GrammarMain.c $(ProjectDir)\..\src\GrammarMain.cpp
-mv $(ProjectDir)\..\src\GrammarReference.c $(ProjectDir)\..\src\GrammarReference.cpp</Command>
-    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)\..\src\lemon\lempar.c.in $(TargetDir)\lempar.c</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -96,22 +100,15 @@ mv $(ProjectDir)\..\src\GrammarReference.c $(ProjectDir)\..\src\GrammarReference
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;C:\local\boost_1_55_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <PreBuildEvent>
-      <Command>$(TargetDir)\lemon.exe -l -q $(ProjectDir)\..\src\GrammarMain.ly
-$(TargetDir)\lemon.exe -l -q $(ProjectDir)\..\src\GrammarReference.ly
-mv $(ProjectDir)\..\src\GrammarMain.c $(ProjectDir)\..\src\GrammarMain.cpp
-mv $(ProjectDir)\..\src\GrammarReference.c $(ProjectDir)\..\src\GrammarReference.cpp</Command>
-    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)\..\src\lemon\lempar.c.in $(TargetDir)\lempar.c</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -121,27 +118,17 @@ mv $(ProjectDir)\..\src\GrammarReference.c $(ProjectDir)\..\src\GrammarReference
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;C:\local\boost_1_55_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy $(SolutionDir)\..\src\lemon\lempar.c.in $(TargetDir)\lempar.c</Command>
     </PostBuildEvent>
-    <PreBuildEvent>
-      <Command>$(TargetDir)\lemon.exe -l -q $(ProjectDir)\..\src\GrammarMain.ly
-$(TargetDir)\lemon.exe -l -q $(ProjectDir)\..\src\GrammarReference.ly
-mv $(ProjectDir)\..\src\GrammarMain.c $(ProjectDir)\..\src\GrammarMain.cpp
-mv $(ProjectDir)\..\src\GrammarReference.c $(ProjectDir)\..\src\GrammarReference.cpp</Command>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -151,60 +138,22 @@ mv $(ProjectDir)\..\src\GrammarReference.c $(ProjectDir)\..\src\GrammarReference
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;C:\local\boost_1_55_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
-    <PreBuildEvent>
-      <Command>$(TargetDir)\lemon.exe -l -q $(ProjectDir)\..\src\GrammarMain.ly
-$(TargetDir)\lemon.exe -l -q $(ProjectDir)\..\src\GrammarReference.ly
-mv $(ProjectDir)\..\src\GrammarMain.c $(ProjectDir)\..\src\GrammarMain.cpp
-mv $(ProjectDir)\..\src\GrammarReference.c $(ProjectDir)\..\src\GrammarReference.cpp</Command>
-    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)\..\src\lemon\lempar.c.in $(TargetDir)\lempar.c</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\File.cpp" />
-    <ClCompile Include="..\src\GrammarMain.cpp" />
-    <ClCompile Include="..\src\GrammarReference.cpp" />
-    <ClCompile Include="..\src\Macro.cpp" />
-    <ClCompile Include="..\src\Parser.cpp" />
-    <ClCompile Include="..\src\Reference.cpp" />
-    <ClCompile Include="..\src\SchemaManager.cpp" />
-    <ClCompile Include="..\src\Tokenizer.cpp" />
-    <ClCompile Include="..\src\TypeName.cpp" />
-    <ClCompile Include="..\src\Value.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\src\GrammarMain.ly" />
-    <None Include="..\src\GrammarReference.ly" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\include\Rsd\Base.h" />
-    <ClInclude Include="..\include\Rsd\File.h" />
-    <ClInclude Include="..\include\Rsd\Macro.h" />
-    <ClInclude Include="..\include\Rsd\Memory.h" />
-    <ClInclude Include="..\include\Rsd\Parser.h" />
-    <ClInclude Include="..\include\Rsd\Platform.h" />
-    <ClInclude Include="..\include\Rsd\Reference.h" />
-    <ClInclude Include="..\include\Rsd\SchemaManager.h" />
-    <ClInclude Include="..\include\Rsd\TypeName.h" />
-    <ClInclude Include="..\include\Rsd\Value.h" />
-    <ClInclude Include="..\src\GrammarMain.h" />
-    <ClInclude Include="..\src\GrammarReference.h" />
-    <ClInclude Include="..\src\Tokenizer.h" />
+    <ClCompile Include="..\..\src\lemon\lemon.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
 </Project>

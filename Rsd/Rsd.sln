@@ -1,11 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2013 for Windows Desktop
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rsd", "Rsd.vcxproj", "{8B7AFDDA-BC26-4E87-89F9-A742440576DF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{008CC682-05EF-491C-A042-F35F1AB873D9} = {008CC682-05EF-491C-A042-F35F1AB873D9}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConsole", "TestConsole\TestConsole.vcxproj", "{CC52229C-A014-4AF3-B57D-5F0289BD96AE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8B7AFDDA-BC26-4E87-89F9-A742440576DF} = {8B7AFDDA-BC26-4E87-89F9-A742440576DF}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lemon", "Lemon\Lemon.vcxproj", "{008CC682-05EF-491C-A042-F35F1AB873D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +49,17 @@ Global
 		{CC52229C-A014-4AF3-B57D-5F0289BD96AE}.Release|Win32.Build.0 = Release|Win32
 		{CC52229C-A014-4AF3-B57D-5F0289BD96AE}.Release|x64.ActiveCfg = Release|x64
 		{CC52229C-A014-4AF3-B57D-5F0289BD96AE}.Release|x64.Build.0 = Release|x64
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Debug|Win32.Build.0 = Debug|Win32
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Debug|x64.ActiveCfg = Debug|x64
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Debug|x64.Build.0 = Debug|x64
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Release|Win32.ActiveCfg = Release|Win32
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Release|Win32.Build.0 = Release|Win32
+		{008CC682-05EF-491C-A042-F35F1AB873D9}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
