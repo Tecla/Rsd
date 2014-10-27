@@ -49,7 +49,7 @@ In the main project directory, run:
 ./waf-1.7.13 configure
 ```
 
-If configuration fails, run you may need to add switches like `--boost-libs=<libdir> --boost-includes=<incdir>` to make sure it finds the appropriate boost bits.  Run waf with `--help` to see all the available options.
+If configuration fails, run you may need to add switches like `--boost-libs=<libdir> --boost-includes=<incdir>` to make sure it finds the appropriate boost bits.  Run waf with `--help` to see all the available options.  In particular, you are likely interested in the `--prefix=<installdir>` option.
 
 Next, to build Rsd you may run:
 
@@ -57,7 +57,11 @@ Next, to build Rsd you may run:
 ./waf-1.7.13 build_opt
 ```
 
-It will deposit the build results in `build/Linux.<platform>/opt/src/libRsd.a`.  Note that there are also `build_debug` and `build_profile` targets
+It will deposit the build results in `build/Linux.<platform>/opt/src/libRsd.a`.  Note that there are also `build_debug` and `build_profile` targets.  Finally, you can install to the prefix directory area via:
+
+```
+./waf-1.7.13 install_opt
+```
 
 The parser and grammars should automatically be built.  If you wish to manually build them, you must go into the `src/lemon` directory and run `make`.  It will rerun the parser generator and put the modified grammar source/header in the src directory for you.  Beware that the waf build system may be confused by the presence of those generated .cpp/.h files, though, so if you go back to building with waf you should `make distclean` in the `src/lemon` directory to clear out those files.
 
