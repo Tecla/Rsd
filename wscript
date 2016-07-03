@@ -47,7 +47,7 @@ def options(opt):
     #Options.tooldir.append('waf_tools')
 
     # Add tool options to the commandline
-    opt.load('compiler_c compiler_cxx boost')
+    opt.load('compiler_c compiler_cxx')
 
     # Add in custom options
     # ...
@@ -61,16 +61,13 @@ def options(opt):
 def configure(conf):
     # Make sure we've got our tools available we need;
     # the order of all of the following is important
-    conf.load('compiler_c compiler_cxx boost')
+    conf.load('compiler_c compiler_cxx')
 
     # Set up pthread and real-time clock availability (for boost_thread)
     if osarch.startswith('Windows'):
         pass
     else:
         conf.env['LIB_PTHREAD'] = [ 'pthread', 'rt' ]
-
-    # Check for boost libraries we use
-    conf.check_boost(lib = 'thread system atomic')
 
     # Common libraries used (that have no associated tool)
     # ...
@@ -83,7 +80,7 @@ def configure(conf):
         conf.env.append_unique('LINKFLAGS', [ '/MD' ])
     else:
         conf.env.append_unique('CCFLAGS', [ '-fPIC', '-rdynamic', '-Wall', '-Wno-unused-parameter' ])
-        conf.env.append_unique('CXXFLAGS', [ '-std=gnu++11', '-fPIC', '-rdynamic', '-Wall', '-Wno-unused-parameter' ])
+        conf.env.append_unique('CXXFLAGS', [ '-std=c++11', '-fPIC', '-rdynamic', '-Wall', '-Wno-unused-parameter' ])
         conf.env.append_unique('LINKFLAGS', [ '-fPIC', '-rdynamic' ])
 
     # Add in all the wscripts for configuration

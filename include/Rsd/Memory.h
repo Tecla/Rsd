@@ -12,10 +12,9 @@
 
 #include <new>
 #include <cstdlib>
+#include <atomic>
+#include <cassert>
 #include <malloc.h>
-
-#include <boost/noncopyable.hpp>
-#include <boost/atomic.hpp>
 
 #include <Rsd/Platform.h>
 
@@ -104,9 +103,9 @@ typedef FakeAlignBase SimdAlign;
 
 // Base class for reference counted objects.  Utilizes atomics to ensure thread-
 // safe reference counting behavior.  You should not delete one of these
-// directly, but instead use Ptr<ClassName> (or boost::intrusive_ptr<ClassName>)
+// directly, but instead use Ptr<ClassName> (or IntrusivePtr<ClassName>)
 // and let it go out of scope.  The last smart pointer dying deletes the object.
-class ReferenceCounted : private boost::noncopyable
+class ReferenceCounted
 {
 public:
     ReferenceCounted() : m_refCount(0) { }
@@ -115,7 +114,7 @@ public:
     {
         // Adding a reference lazily should be safe from any thread, as it can
         // only happen when an existing reference lives in the same thread.
-        m_refCount.fetch_add(1, boost::memory_order_relaxed);
+        m_refCount.fetch_add(1, std::memory_order_relaxed);
     }
 
     void decrementReference() const
@@ -124,16 +123,16 @@ public:
         // count right.  We only have to do a barrier for starting subsequent
         // operations when we are going to delete it, otherwise the other
         // threads can move along.
-        if (m_refCount.fetch_sub(1, boost::memory_order_release) == 1)
+        if (m_refCount.fetch_sub(1, std::memory_order_release) == 1)
         {
-            boost::atomic_thread_fence(boost::memory_order_acquire);
+            std::atomic_thread_fence(std::memory_order_acquire);
             delete this;
         }
     }
 
     unsigned int referenceCount() const
     {
-        return m_refCount.load(boost::memory_order_consume);
+        return m_refCount.load(std::memory_order_consume);
     }
 
     // Don't use this unless you know what you're doing (or you'll get leaks)
@@ -141,7 +140,7 @@ public:
     {
         if (referenceCount() > 0)
         {
-            m_refCount.fetch_sub(1, boost::memory_order_release);
+            m_refCount.fetch_sub(1, std::memory_order_release);
         }
     }
 
@@ -158,88 +157,270 @@ protected:
 
 
 private:
-    mutable boost::atomic<unsigned int> m_refCount;
+    mutable std::atomic<unsigned int> m_refCount;
 };
 
 
-} // namespace RenderSpud
-
-
-namespace boost
+//
+//  IntrusivePtr
+//
+//  A smart pointer that uses intrusive reference counting.
+//
+//  Relies on unqualified calls to
+//
+//      void intrusiveAddRef(T *p);
+//      void intrusiveDecRef(T *p);
+//
+//          (p != nullptr)
+//
+//  The object is responsible for destroying itself.
+//
+template<class T>
+class IntrusivePtr
 {
-    // Required to use ReferenceCounted with boost::intrusive_ptr<T>
+private:
+    typedef IntrusivePtr SelfType;
 
-    inline void intrusive_ptr_add_ref(RenderSpud::ReferenceCounted *pRefCounted)
+public:
+
+    class EmptyType { };
+
+    typedef T element_type;
+
+    IntrusivePtr() noexcept : px(nullptr) { }
+
+    IntrusivePtr(T *p, bool addRef = true): px(p)
     {
-        pRefCounted->incrementReference();
+        if (px != nullptr && addRef)
+            intrusiveAddRef(px);
     }
 
-    inline void intrusive_ptr_add_ref(const RenderSpud::ReferenceCounted *pRefCounted)
+    template<class U>
+    IntrusivePtr(IntrusivePtr<U> const& rhs, typename std::enable_if<std::is_convertible<U*,T*>::value, EmptyType>::type = EmptyType())
+        : px(rhs.get())
     {
-        pRefCounted->incrementReference();
+        if (px != nullptr)
+            intrusiveAddRef(px);
     }
 
-    inline void intrusive_ptr_release(RenderSpud::ReferenceCounted *pRefCounted)
+    IntrusivePtr(IntrusivePtr const& rhs)
+        : px(rhs.px)
     {
-        pRefCounted->decrementReference();
+        if (px != nullptr)
+            intrusiveAddRef(px);
     }
 
-    inline void intrusive_ptr_release(const RenderSpud::ReferenceCounted *pRefCounted)
+    ~IntrusivePtr()
     {
-        pRefCounted->decrementReference();
+        if (px != nullptr)
+            intrusiveDecRef(px);
     }
+
+    template<class U>
+    IntrusivePtr& operator =(IntrusivePtr<U> const& rhs)
+    {
+        SelfType(rhs).swap(*this);
+        return *this;
+    }
+
+    IntrusivePtr(IntrusivePtr&& rhs) noexcept
+        : px(rhs.px)
+    {
+        rhs.px = nullptr;
+    }
+
+    IntrusivePtr& operator =(IntrusivePtr&& rhs) noexcept
+    {
+        SelfType(static_cast<IntrusivePtr&&>(rhs)).swap(*this);
+        return *this;
+    }
+
+    IntrusivePtr& operator=(IntrusivePtr const& rhs)
+    {
+        SelfType(rhs).swap(*this);
+        return *this;
+    }
+
+    IntrusivePtr& operator=(T *rhs)
+    {
+        SelfType(rhs).swap(*this);
+        return *this;
+    }
+
+    void reset() noexcept
+    {
+        SelfType().swap(*this);
+    }
+
+    void reset(T *rhs)
+    {
+        SelfType(rhs).swap(*this);
+    }
+
+    T* get() const noexcept
+    {
+        return px;
+    }
+
+    T& operator *() const
+    {
+        assert(px != nullptr);
+        return *px;
+    }
+
+    T* operator ->() const
+    {
+        assert(px != nullptr);
+        return px;
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return px != nullptr;
+    }
+
+    // operator! is redundant, but some compilers need it
+    bool operator !() const noexcept
+    {
+        return px == nullptr;
+    }
+
+    void swap(IntrusivePtr& rhs) noexcept
+    {
+        T *tmp = px;
+        px = rhs.px;
+        rhs.px = tmp;
+    }
+
+private:
+    T *px;
+};
+
+
+template<class T, class U>
+inline bool operator ==(IntrusivePtr<T> const& a, IntrusivePtr<U> const& b)
+{
+    return a.get() == b.get();
+}
+
+template<class T, class U>
+inline bool operator !=(IntrusivePtr<T> const& a, IntrusivePtr<U> const& b)
+{
+    return a.get() != b.get();
+}
+
+template<class T, class U>
+inline bool operator ==(IntrusivePtr<T> const& a, U *b)
+{
+    return a.get() == b;
+}
+
+template<class T, class U>
+inline bool operator !=(IntrusivePtr<T> const& a, U *b)
+{
+    return a.get() != b;
+}
+
+template<class T, class U>
+inline bool operator ==(T *a, IntrusivePtr<U> const& b)
+{
+    return a == b.get();
+}
+
+template<class T, class U>
+inline bool operator !=(T *a, IntrusivePtr<U> const& b)
+{
+    return a != b.get();
+}
+
+template<class T>
+inline bool operator ==(IntrusivePtr<T> const & p, std::nullptr_t) noexcept
+{
+    return p.get() == nullptr;
+}
+
+template<class T>
+inline bool operator ==(std::nullptr_t, IntrusivePtr<T> const& p) noexcept
+{
+    return p.get() == nullptr;
+}
+
+template<class T>
+inline bool operator !=(IntrusivePtr<T> const& p, std::nullptr_t) noexcept
+{
+    return p.get() != nullptr;
+}
+
+template<class T>
+inline bool operator !=(std::nullptr_t, IntrusivePtr<T> const& p) noexcept
+{
+    return p.get() != nullptr;
+}
+
+template<class T>
+inline bool operator <(IntrusivePtr<T> const& a, IntrusivePtr<T> const& b)
+{
+    return std::less<T *>()(a.get(), b.get());
+}
+
+template<class T>
+void swap(IntrusivePtr<T>& lhs, IntrusivePtr<T>& rhs)
+{
+    lhs.swap(rhs);
+}
+
+// mem_fn support
+
+template<class T>
+T* get_pointer(IntrusivePtr<T> const& p)
+{
+    return p.get();
+}
+
+template<class T, class U>
+IntrusivePtr<T> static_pointer_cast(IntrusivePtr<U> const& p)
+{
+    return static_cast<T *>(p.get());
+}
+
+template<class T, class U>
+IntrusivePtr<T> const_pointer_cast(IntrusivePtr<U> const& p)
+{
+    return const_cast<T *>(p.get());
+}
+
+template<class T, class U>
+IntrusivePtr<T> dynamic_pointer_cast(IntrusivePtr<U> const& p)
+{
+    return dynamic_cast<T *>(p.get());
 }
 
 
-#include <boost/smart_ptr/intrusive_ptr.hpp>
+// Required to use ReferenceCounted with intrusive_ptr<T>
 
-
-namespace RenderSpud
+inline void intrusiveAddRef(ReferenceCounted *pRefCounted)
 {
+    pRefCounted->incrementReference();
+}
 
-
-template<class T>
-class Ptr : public boost::intrusive_ptr<T>
+inline void intrusiveAddRef(const ReferenceCounted *pRefCounted)
 {
-public:
-    Ptr() : boost::intrusive_ptr<T>() { }
+    pRefCounted->incrementReference();
+}
 
-    Ptr(T *p, bool add_ref = true ): boost::intrusive_ptr<T>(p, add_ref) { }
+inline void intrusiveDecRef(ReferenceCounted *pRefCounted)
+{
+    pRefCounted->decrementReference();
+}
 
-    template<class U>
-    Ptr(boost::intrusive_ptr<U> const &rhs,
-        typename boost::detail::sp_enable_if_convertible<U, T>::type = boost::detail::sp_empty() )
-        : boost::intrusive_ptr<T>(rhs) { }
+inline void intrusiveDecRef(const ReferenceCounted *pRefCounted)
+{
+    pRefCounted->decrementReference();
+}
 
-    Ptr(Ptr const &rhs) : boost::intrusive_ptr<T>(rhs) { }
 
-    template<class U>
-    Ptr<T>& operator =(boost::intrusive_ptr<U> const &rhs)
-    {
-        Ptr<T>(rhs).swap(*this);
-        return *this;
-    }
-
-    Ptr(Ptr<T> &&rhs) : boost::intrusive_ptr<T>(rhs) { }
-
-    Ptr<T>& operator =(Ptr<T> &&rhs)
-    {
-        boost::intrusive_ptr<T>::operator =(rhs);
-        return *this;
-    }
-
-    Ptr<T>& operator =(Ptr<T> const &rhs)
-    {
-        boost::intrusive_ptr<T>::operator =(rhs);
-        return *this;
-    }
-
-    Ptr<T>& operator=(T *rhs)
-    {
-        boost::intrusive_ptr<T>::operator =(rhs);
-        return *this;
-    }
-};
+template<typename T>
+using Ptr = IntrusivePtr<T>;
 
     
 } // namespace RenderSpud

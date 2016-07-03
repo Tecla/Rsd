@@ -40,8 +40,8 @@ class Value;
 //     MyMacro(const std::string& name) : Macro(name) { }
 //     virtual ~MyMacro() { }
 //
-//     virtual boost::intrusive_ptr<Value> execute(const Value& context,
-//                                                 const ArgumentValueMap& keywordArgValues);
+//     virtual Ptr<Value> execute(const Value& context,
+//                                const ArgumentValueMap& keywordArgValues);
 // };
 //
 // void setupMyMacros()

@@ -21,7 +21,7 @@ namespace RenderSpud
 
 
 // Base class for reference counted objects.  You should not delete one of these
-// directly, but instead use ClassName::Ptr (or boost::intrusive_ptr<ClassName>)
+// directly, but instead use ClassName::Ptr (or IntrusivePtr<ClassName>)
 // and let it go out of scope.  The last smart pointer dying deletes the object.
 typedef RenderSpud::ReferenceCounted ReferenceCounted;
 
