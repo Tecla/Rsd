@@ -79,9 +79,9 @@ def configure(conf):
         conf.env.append_unique('CXXFLAGS', [ '/MD', '/Wall' ])
         conf.env.append_unique('LINKFLAGS', [ '/MD' ])
     else:
-        conf.env.append_unique('CCFLAGS', [ '-fPIC', '-rdynamic', '-Wall', '-Wno-unused-parameter' ])
-        conf.env.append_unique('CXXFLAGS', [ '-std=c++11', '-fPIC', '-rdynamic', '-Wall', '-Wno-unused-parameter' ])
-        conf.env.append_unique('LINKFLAGS', [ '-fPIC', '-rdynamic' ])
+        conf.env.append_unique('CCFLAGS', [ '-fPIC', '-Wall', '-Wno-unused-parameter' ])
+        conf.env.append_unique('CXXFLAGS', [ '-std=c++11', '-fPIC', '-Wall', '-Wno-unused-parameter' ])
+        conf.env.append_unique('LINKFLAGS', [ '-fPIC' ])
 
     # Add in all the wscripts for configuration
     for buildSubdir in buildSubdirectories:
